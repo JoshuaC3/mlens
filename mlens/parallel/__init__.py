@@ -2,23 +2,33 @@
 
 :author: Sebastian Flennerhag
 :copyright: 2017
-:licence: MIT
-"""
+:license: MIT
 
-from .stack import Stacker
-from .blend import Blender
-from .subset import SubStacker
-from .single_run import SingleRun
-from .evaluation import Evaluation
-from .estimation import BaseEstimator
-from .manager import ParallelProcessing, ParallelEvaluation
+Computational graph module for memory-neutral parallel processing of
+deep general-purpose ensembles.
+
+Implements backend graph managers, base classes for interacting with graph
+managers, and job managers for preprocessing pipelines and estimators, as well
+as handles for multiple instances and wrappers for standard parallel job calls.
+"""
+from .backend import ParallelProcessing, ParallelEvaluation, Job, dump_array
+from .learner import Learner, EvalLearner, Transformer, EvalTransformer
+from .layer import Layer
+from .handles import Group, make_group, Pipeline
+from .wrapper import run, get_backend
 
 __all__ = ['ParallelProcessing',
            'ParallelEvaluation',
-           'Stacker',
-           'Blender',
-           'SubStacker',
-           'SingleRun',
-           'Evaluation',
-           'BaseEstimator'
+           'job',
+           'Layer',
+           'Group',
+           'Pipeline',
+           'Learner',
+           'Transformer',
+           'EvalLearner',
+           'EvalTransformer',
+           'make_group',
+           'run',
+           'get_backend',
+           'dump_array'
            ]

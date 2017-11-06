@@ -1,3 +1,8 @@
+<div align="center">
+<img src="docs/source/_static/img/logo.png" width="50%"><br><br>
+</div>
+<hr>
+
 ![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)
 ![Python 3.5](https://img.shields.io/badge/python-3.5-blue.svg)
 ![Python 2.7](https://img.shields.io/badge/python-2.7-blue.svg)
@@ -6,40 +11,48 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/99g65kvraic8w2la/branch/master?svg=true)](https://ci.appveyor.com/project/flennerhag/mlens/branch/master)
 [![Code Health](https://landscape.io/github/flennerhag/mlens/master/landscape.svg?style=flat)](https://landscape.io/github/flennerhag/mlens/master)
 [![Coverage Status](https://coveralls.io/repos/github/flennerhag/mlens/badge.svg?branch=master)](https://coveralls.io/github/flennerhag/mlens?branch=master)
-[![Documentation Status](http://readthedocs.org/projects/mlens/badge/?version=latest)](http://mlens.readthedocs.io/en/latest/?badge=latest)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-
-# ML- Ensemble
-
-**A Python library for memory efficient
-parallelized ensemble learning**.
-
-ML-Ensemble combines the Scikit-learn estimator API with a neural-network style
-API to allow straight-forward multi-layer ensemble network architectures that
-can be used as any Scikit-learn estimator.
-
-The core principle of ML-Ensemble is to maximize parallel processing at minimum
-memory consumption. ML-Ensemble uses memory mapping to remain memory neutral
-during parallel estimation. For full documentation, see [here](http://mlens.readthedocs.io/en/latest/).
-
-## Core Features
+[![DOI](https://zenodo.org/badge/78573084.svg)](https://zenodo.org/badge/latestdoi/78573084)
+[![Discuss](https://img.shields.io/badge/discuss-google_group-blue.svg)](https://groups.google.com/forum/#!forum/ml-ensemble)
+[![Gitter chat](https://badges.gitter.im/mlens/mlens.svg)](https://gitter.im/mlens?utm_source=badge&utm_medium=badge&utm_campaign=mlens-badge&utm_content=body_badge)
 
 
-Ensembles are build as a feed-forward network, with each layer
-allowing different fitting procedures, differentiated preprocessing
-for subsets of estimators and input feature propagation. It is straightforward 
-to build deep ensembles with complex network structures.
+**A Python library for high performance ensemble learning**
 
-![Network](docs/img/network.png)
+ML-Ensemble combines a Scikit-learn high-level API with a low-level
+computational graph framework to build memory efficient, 
+maximally parallelized ensemble networks in as few lines of codes as possible.
 
+ML-Ensemble is thread safe as long as base learners are and can fall back on
+memory mapped multiprocessing for memory-neutral process-based concurrency.
+For tutorials and full documentation, visit the project
+ [website](http://www.ml-ensemble.com/). Core features include:
 
-### Transparent Architecture API
+## Ensembles as computational graphs
 
-Ensembles are built by adding layers to an instance object: layers in their
-turn are comprised of a list of estimators. No matter how complex the
-ensemble, to train it call the ``fit`` method:
+An ensemble is built on top of a computational graph,
+allowing users great design freedom. Ensembles can be built with recursion,
+dynamic evaluation (e.g. ``if-else``) and much more. A high-level API wraps common
+ensemble architectures into Scikit-learn estimators.
 
-```Python
+<div align="center">
+<img src="docs/source/_static/img/network.png" width="60%"><br><br>
+</div>
+
+*Example computational graph of a layer in an ensemble*
+
+### Memory efficient parallelized learning
+
+ML-Ensemble is optimized for speed and minimal memory consumption. No
+serialization of data takes place, regardless of whether multithreading or
+multiprocessing is used. Additionally, multithreading is pickle-free. 
+
+### Easy of use
+
+Ready-made ensembles are built by adding layers to an instance. No matter how
+complex the ensemble, to train it call the ``fit`` method:
+
+```python
 ensemble = Subsemble()
 
 # First layer
@@ -55,40 +68,21 @@ ensemble.add_meta(estimator)
 ensemble.fit(X, y)
 ```
 
-### Memory Efficient Parallelized Learning
+Similarly, it's straightforward to modify an existing ensemble:
 
-Training data is persisted to a memory cache that each sub-process has access
-to, allowing parallel processing to require no more memory than processing
-on a single thread.
-For more details, see [here](http://mlens.readthedocs.io/en/latest/memory.html).
+```python
+# Remove layer
+ensemble.remove(2)
 
-Expect 95-97% of training time to be spent fitting the base estimators -
-*irrespective* of data size. The time it takes to fit an ensemble depends
-therefore entirely on how fast the chosen base learners are,
-and how many CPU cores are available.
+# Change layer parameters
+ensemble.replace(0, new_list_of_estimators)
+```
 
-Moreover, ensemble classes that fit estimators on subsets scale more
-efficiently than the base learners when these do not scale linearly.
+And to create differentiated preprocessing pipelines for different subsets
+of estimators within a given layer, simple pass a mapping to the ``add``
+method:
 
-### Modular build of multi-layered ensembles
-
-The core unit of an ensemble is a **layer**, much as a hidden unit in a neural
-network. Each layer contains an ensemble class specification and a mapping of
-preprocessing pipelines to base learners to be used during fitting.
-
-The modular build of an ensemble allows great flexibility in architecture,
-both in terms of the depth of the ensemble (number of layers)
-and how each layer generates predictions.
-
-### Differentiated preprocessing pipelines
-
-ML-Ensemble offers the possibility to specify, for each layer, a set
-of preprocessing pipelines that maps to different (or the same) sets of
-estimators. One set of estimators might benefit from one type of preprocessing,
-while for a different set of estimators another preprocessing pipeline is
-desired. This can easily be achieved in ML-Ensemble:
-
-```Python
+```python
 
 preprocessing = {'pipeline-1': list_of_transformers_1,
                  'pipeline-2': list_of_transformers_2}
@@ -99,19 +93,17 @@ estimators = {'pipeline-1': list_of_estimators_1,
 ensemble.add(estimators, preprocessing)
 ```
 
-### Dedicated Diagnostics
+### Dedicated diagnostics
 
 ML Ensemble implements a dedicated diagnostics and model selection suite
-for intuitive and speedy ensemble evaluation. In particular, the ``Evaluator``
-class allows users to evaluate several preprocessing pipelines and several
-estimators in one go, possibly even evaluating different estimators on
-different preprocessing pipelines. 
+for intuitive and speedy ensemble evaluation. The ``Evaluator``
+allows you to evaluate several preprocessing pipelines and several
+estimators in one go, giving you birds-eye view of how different candidates
+for the ensemble perform.
 
-Moreover, the ``EnsembleTransformer`` allows user to build a transformer that
-behaves as any ensemble, but that returns the predictions from the ``fit``
-call. Hence, the transformer can be used together with the ``Evaluator`` to
-pre-generate training folds for model selection of the meta estimator
-(or further layers). For a full example, see [here](http://mlens.readthedocs.io/en/latest/ensemble_tutorial.html#meta-learner-model-selection).
+Moreover, entire *ensembles* can be used as a preprocessing pipeline, to
+leverage model selection for higher-level layers. Simply set ``model_selection``
+to ``True`` in the ensemble (don't forget to turn it off when done).
 
 ```Python
 
@@ -123,9 +115,10 @@ evaluator = Evaluator(scorer=score_func)
 evaluator.fit(X, y, list_of_estimators, param_dists_dict, preprocessing_dict)
 ```
 
-Output is ordered per transformation case and estimators, and can be given a
-readable tabular view by passing the ``summary`` attribute to a Pandas
-``DataFrame``, as in the example below.
+All ensembles and model selection instances provides summary statistics in
+tabular format. You can find fit and prediction times in any ensemble by calling
+``data``, and cv-scores if you passed a scorer. For the model selection suite,
+the ``results`` attribute gives you the outcome of an evaluation::
 
 ```Python
               fit_time_mean  fit_time_std  train_score_mean  train_score_std  test_score_mean  test_score_std               params
@@ -137,11 +130,11 @@ prep-3 est-1       0.000735      0.000248          0.791111         0.019821    
        est-2       0.000462      0.000143          0.837037         0.014815         0.800000        0.126491   {'n_neighbors': 9}
 ```
 
-## How to install
+## Install
 
 #### PyPI
 
-Execute
+ML-Ensemble is available on PyPI. Install with
 
 ```bash
 pip install mlens
@@ -149,22 +142,41 @@ pip install mlens
 
 #### Bleeding edge
 
-To ensure latest version is installed, fork the GitHub repository.
+For developer version, fork the GitHub repository.
 
 ```bash
 git clone https://github.com/flennerhag/mlens.git; cd mlens;
 python install setup.py
 ```
 
-#### Developer version
+## Citation
 
-For the latest in-development version, install the ``dev`` branch of the
-repository.
+If you use ML-Ensemble for scientific publication, please consider citing us:
 
-```bash
-git clone https://github.com/flennerhag/mlens.git; cd mlens; git checkout dev;
-python install setup.py
 ```
+@misc{flennerhag:2017mlens,
+  author = {Flennerhag, Sebastian},
+  title  = {ML-Ensemble},
+  month  = nov,
+  year   = 2017,
+  doi    = {10.5281/zenodo.1042144},
+  url    = {https://dx.doi.org/10.5281/zenodo.1042144}
+}
+```
+
+## Questions
+
+For issues, please see the [issue tracker](https://github.com/flennerhag/mlens/issues).
+For quick questions or discussions, reach out on either the
+[gitter channel](https://gitter.im/mlens) or the [Google group](https://groups.google.com/forum/#!forum/ml-ensemble).
+
+
+## Contribute
+
+ML-Ensemble is an open-source project that welcome any contribution, small as large.
+For minor fixes, submit a PR with a description of the commit(s). For more substantial contributions
+please reach out first to ensure your contribution doesn't rely on code that is being
+phased out. To join the slack channel, send a request to the [Google group](https://groups.google.com/forum/#!forum/ml-ensemble).  
 
 ## License
 

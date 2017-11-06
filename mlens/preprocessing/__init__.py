@@ -1,11 +1,12 @@
-"""
+"""ML-Ensemble
 
 :author: Sebastian Flennerhag
 :copyright: 2017
 :licence: MIT
+
+Auxiliary transformers to support computational graphs.
 """
 
 from .preprocess import Subset, Shift
-from .ensemble_transformer import EnsembleTransformer
 
-__all__ = ['Subset', 'Shift', 'EnsembleTransformer']
+__all__ = ['Subset', 'Shift']
